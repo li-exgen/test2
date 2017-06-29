@@ -1,0 +1,44 @@
+machine:
+  timezone:
+    Asia/Tokyo
+  java:
+    version:
+      openjdk8
+
+checkout:
+  post:
+    - git checkout release
+
+dependencies:
+  pre:
+    - echo "build develop"
+    - git clone https://github.com/li-exgen/test.git
+    - cd test && git checkout develop
+    - # cd test && pwd;find . | sort | sed '1d;s/^\.//;s/\/\([^/]*\)$/|--\1/;s/\/[^/|]*/|  /g'
+    - echo ${CIRCLE_BUILD_NUM}
+    - cd test && mvn -B -f src/webapp/SpringExample/pom.xml clean package findbugs:findbugs pmd:pmd -Dbuild.number=${CIRCLE_BUILD_NUM} -Pdeploy -Dmaven.test.skip=true
+    - ls -al test/src/webapp/SpringExample/target/*.jar
+  override:
+    - cp -f test/src/webapp/SpringExample/target/*.jar module/webapp/
+
+test:
+  override:
+    - echo "No Test"
+    - # pwd;find . | sort | sed '1d;s/^\.//;s/\/\([^/]*\)$/|--\1/;s/\/[^/|]*/|  /g'
+    - ls -al module/webapp
+
+deployment:
+  staging:
+    branch: release
+    commands:
+      - echo "staging deployment"
+      - git config --global user.email li@exgen.co.jp
+      - git config --global user.name li-exgen
+      - git commit -am "deploy from CircleCI"
+      - git push origin release
+
+general:
+  branches:
+    only:
+      - release
+
