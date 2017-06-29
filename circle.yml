@@ -26,6 +26,12 @@ test:
 deployment:
   staging:
     branch: release
+    commands:
+      - echo "staging deployment"
+      - git config --global user.email li@exgen.co.jp
+      - git config --global user.name li-exgen
+      - git commit -am "deploy from CircleCI"
+      - git push origin release
 
 general:
   branches:
